@@ -1,6 +1,4 @@
 
-
-/* ---------- STORAGE KEYS ---------- */
 const STORAGE_KEY = "luminaClanQuizData";
 
 /* ---------- DEFAULT PERSISTENT STATE ---------- */
