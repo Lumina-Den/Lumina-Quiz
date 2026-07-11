@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lumina Clan — Ultimate Programming Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= BACKGROUND LAYERS ================= -->
+<div class="bg-layer" id="bgLayer">
+  <div class="clouds" id="clouds"></div>
+  <div class="particles" id="bgParticles"></div>
+</div>
+
+<!-- ================= APP ROOT ================= -->
+<div id="app">
+
+  <!-- ============ HOME SCREEN ============ -->
+  <section id="screen-home" class="screen active">
+    <div class="top-icons">
+      <button class="icon-btn" id="musicToggle" title="Toggle Music">🎵</button>
+      <button class="icon-btn" id="sfxToggle" title="Toggle Sound">🔊</button>
+      <button class="icon-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+    </div>
+
+    <div class="home-content">
+      <div class="title-block">
+        <h1 class="game-title"><span class="t-glow">LUMINA</span> <span class="t-emerald">CLAN</span></h1>
+        <p class="game-subtitle">⛏ ULTIMATE PROGRAMMING QUIZ ⛏</p>
+      </div>
+
+      <div class="grass-divider"></div>
+
+      <nav class="main-menu">
+        <button class="mc-btn mc-btn-primary" id="btnPlay">
+          <span class="mc-btn-icon">▶</span> PLAY
+        </button>
+        <button class="mc-btn" id="btnHowTo">
+          <span class="mc-btn-icon">📖</span> HOW TO PLAY
+        </button>
+        <button class="mc-btn" id="btnStats">
+          <span class="mc-btn-icon">📊</span> STATISTICS
+        </button>
+        <button class="mc-btn" id="btnAchievements">
+          <span class="mc-btn-icon">🏆</span> ACHIEVEMENTS
+        </button>
+        <button class="mc-btn" id="btnSettings">
+          <span class="mc-btn-icon">⚙</span> SETTINGS
+        </button>
+        <button class="mc-btn" id="btnCredits">
+          <span class="mc-btn-icon">✎</span> CREDITS
+        </button>
+      </nav>
+
+      <p class="version-tag">v1.0 — Lumina Clan Edition</p>
+    </div>
+  </section>
+
+  <!-- ============ LANGUAGE SELECT SCREEN ============ -->
+  <section id="screen-languages" class="screen">
+    <header class="sub-header">
+      <button class="mc-back-btn" data-back="home">⟵ BACK</button>
+      <h2 class="sub-title">CHOOSE YOUR LANGUAGE</h2>
+      <div class="header-spacer"></div>
+    </header>
+    <div class="lang-grid" id="langGrid"><!-- injected by JS --></div>
+  </section>
+
+  <!-- ============ QUIZ SCREEN ============ -->
+  <section id="screen-quiz" class="screen">
+    <div class="quiz-hud">
+      <div class="hud-left">
+        <div class="hearts" id="heartsDisplay">❤❤❤</div>
+        <div class="combo-tag" id="comboTag" style="display:none;">🔥 COMBO x<span id="comboVal">0</span></div>
+      </div>
+      <div class="hud-center">
+        <div class="q-counter" id="qCounter">Question 1 / 10</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div class="hud-right">
+        <div class="stat-pill emerald-pill">💎 <span id="emeraldCount">0</span></div>
+        <div class="stat-pill xp-pill">⭐ <span id="scoreCount">0</span></div>
+      </div>
+    </div>
+
+    <div class="timer-wrap">
+      <div class="timer-bar" id="timerBar"></div>
+      <div class="timer-text" id="timerText">30</div>
+    </div>
+
+    <div class="quiz-body">
+      <div class="question-card" id="questionCard">
+        <div class="q-lang-badge" id="qLangBadge">JAVA</div>
+        <h3 class="question-text" id="questionText">Loading question...</h3>
+        <pre class="code-snippet" id="codeSnippet" style="display:none;"></pre>
+      </div>
+
+      <div class="answers-grid" id="answersGrid"><!-- injected by JS --></div>
+    </div>
+
+    <div class="xp-bar-wrap">
+      <div class="xp-bar-label">XP</div>
+      <div class="xp-bar-track"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+    </div>
+
+    <div class="particle-layer" id="particleLayer"></div>
+    <div class="floating-text-layer" id="floatingLayer"></div>
+  </section>
+
+  <!-- ============ RESULTS SCREEN ============ -->
+  <section id="screen-results" class="screen">
+    <div class="results-panel">
+      <div class="trophy" id="trophyIcon">🏆</div>
+      <h2 class="results-title">QUEST COMPLETE!</h2>
+      <div class="rank-badge" id="rankBadge">
+        <span class="rank-name" id="rankName">GOLD RANK</span>
+      </div>
+
+      <div class="results-grid">
+        <div class="result-stat"><span class="rs-label">Language</span><span class="rs-val" id="resLang">Java</span></div>
+        <div class="result-stat"><span class="rs-label">Correct</span><span class="rs-val" id="resCorrect">0</span></div>
+        <div class="result-stat"><span class="rs-label">Wrong</span><span class="rs-val" id="resWrong">0</span></div>
+        <div class="result-stat"><span class="rs-label">Skipped</span><span class="rs-val" id="resSkipped">0</span></div>
+        <div class="result-stat"><span class="rs-label">Accuracy</span><span class="rs-val" id="resAccuracy">0%</span></div>
+        <div class="result-stat"><span class="rs-label">Time Taken</span><span class="rs-val" id="resTime">0s</span></div>
+        <div class="result-stat"><span class="rs-label">XP Earned</span><span class="rs-val" id="resXP">0</span></div>
+        <div class="result-stat"><span class="rs-label">Emeralds</span><span class="rs-val" id="resEmeralds">0</span></div>
+        <div class="result-stat"><span class="rs-label">Best Combo</span><span class="rs-val" id="resCombo">x0</span></div>
+      </div>
+
+      <div class="results-actions">
+        <button class="mc-btn mc-btn-primary" id="btnPlayAgain">PLAY AGAIN</button>
+        <button class="mc-btn" id="btnChooseLang">CHOOSE LANGUAGE</button>
+        <button class="mc-btn" id="btnShareScore">SHARE SCORE</button>
+        <button class="mc-btn" id="btnGoHome">HOME</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MODALS ============ -->
+  <div class="modal-overlay" id="modalOverlay"></div>
+
+  <div class="modal" id="modal-howto">
+    <h2 class="modal-title">📖 HOW TO PLAY</h2>
+    <div class="modal-body">
+      <ul class="howto-list">
+        <li>⛏ Pick a programming language from the world map of cards.</li>
+        <li>⏱ Answer each question within 30 seconds — the timer glows red at 10s left.</li>
+        <li>❤ You have 3 hearts. A wrong answer or timeout costs one heart.</li>
+        <li>⭐ Correct answers earn +10 XP and 💎 +2 Emeralds. Streaks give bonus XP!</li>
+        <li>🔥 Chain correct answers to build a combo multiplier.</li>
+        <li>🏆 Finish the quiz to earn a Rank, from Wood to Netherite Master.</li>
+      </ul>
+    </div>
+    <button class="mc-btn mc-btn-primary modal-close">GOT IT</button>
+  </div>
+
+  <div class="modal" id="modal-settings">
+    <h2 class="modal-title">⚙ SETTINGS</h2>
+    <div class="modal-body">
+      <label class="setting-row">Music Volume
+        <input type="range" id="musicVolume" min="0" max="100" value="50">
+      </label>
+      <label class="setting-row">SFX Volume
+        <input type="range" id="sfxVolume" min="0" max="100" value="70">
+      </label>
+      <label class="setting-row">Animations
+        <input type="checkbox" id="animToggle" checked>
+      </label>
+      <label class="setting-row">Theme
+        <select id="themeSelect">
+          <option value="overworld">Overworld</option>
+          <option value="nether">Nether</option>
+          <option value="end">The End</option>
+        </select>
+      </label>
+      <button class="mc-btn danger-btn" id="btnResetData">RESET ALL PROGRESS</button>
+    </div>
+    <button class="mc-btn mc-btn-primary modal-close">SAVE & CLOSE</button>
+  </div>
+
+  <div class="modal" id="modal-stats">
+    <h2 class="modal-title">📊 STATISTICS</h2>
+    <div class="modal-body">
+      <div class="stats-grid" id="statsGrid"><!-- injected by JS --></div>
+    </div>
+    <button class="mc-btn mc-btn-primary modal-close">CLOSE</button>
+  </div>
+
+  <div class="modal" id="modal-achievements">
+    <h2 class="modal-title">🏆 ACHIEVEMENTS</h2>
+    <div class="modal-body">
+      <div class="ach-grid" id="achGrid"><!-- injected by JS --></div>
+    </div>
+    <button class="mc-btn mc-btn-primary modal-close">CLOSE</button>
+  </div>
+
+  <div class="modal" id="modal-credits">
+    <h2 class="modal-title">✎ CREDITS</h2>
+    <div class="modal-body">
+      <p class="credit-line">Designed &amp; Built for <strong>Lumina Clan</strong></p>
+      <p class="credit-line">A community project for developers who love Minecraft.</p>
+      <p class="credit-line">Blocks, brains, and bugs squashed with ❤</p>
+    </div>
+    <button class="mc-btn mc-btn-primary modal-close">CLOSE</button>
+  </div>
+
+  <!-- Achievement popup -->
+  <div class="achievement-popup" id="achievementPopup">
+    <div class="ach-popup-icon" id="achPopupIcon">🏆</div>
+    <div class="ach-popup-text">
+      <div class="ach-popup-title">Achievement Unlocked!</div>
+      <div class="ach-popup-name" id="achPopupName"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="questions.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
