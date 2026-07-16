@@ -81,7 +81,23 @@ const isMember = Array.isArray(orgs) &&
   orgs.some(org => org.login.toLowerCase() === env.GITHUB_ORG.toLowerCase());
 
 if (!isMember) {
-  return redirectToSite(env, { login: "denied", reason: "not_member" });
+  return new Response(
+    JSON.stringify(
+      {
+        githubUser: user.login,
+        orgSetting: env.GITHUB_ORG,
+        orgsReturnedByGitHub: orgs
+      },
+      null,
+      2
+    ),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
 }
 
       // 4. Success — send the user back with their public profile info.
