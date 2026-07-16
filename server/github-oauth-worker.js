@@ -66,22 +66,23 @@ export default {
         return redirectToSite(env, { login: "denied", reason: "profile_fetch_failed" });
       }
 
-      // 3. Check org membership using a worker-only PAT with read:org.
-      //    204 = member, 404 = not a member, anything else = treat as denied.
-      const orgCheckRes = await fetch(
-        `https://api.github.com/orgs/${env.GITHUB_ORG}/members/${user.login}`,
-        {
-          headers: {
-            "Authorization": `Bearer ${env.GITHUB_ORG_CHECK_TOKEN}`,
-            "User-Agent": "lumina-clan-auth-worker",
-            "Accept": "application/vnd.github+json"
-          }
-        }
-      );
+     // Check the authenticated user's organizations
+const orgsRes = await fetch("https://api.github.com/user/orgs", {
+  headers: {
+    "Authorization": `Bearer ${accessToken}`,
+    "User-Agent": "lumina-clan-auth-worker",
+    "Accept": "application/vnd.github+json"
+  }
+});
 
-      if (orgCheckRes.status !== 204) {
-        return redirectToSite(env, { login: "denied", reason: "not_member" });
-      }
+const orgs = await orgsRes.json();
+
+const isMember = Array.isArray(orgs) &&
+  orgs.some(org => org.login.toLowerCase() === env.GITHUB_ORG.toLowerCase());
+
+if (!isMember) {
+  return redirectToSite(env, { login: "denied", reason: "not_member" });
+}
 
       // 4. Success — send the user back with their public profile info.
       //    (Nothing secret is included in this redirect.)
