@@ -1,0 +1,5 @@
+{
+  "name": "server",
+  "compatibility_date": "2026-07-16",
+  "main": "github-oauth-worker.js"
+}
