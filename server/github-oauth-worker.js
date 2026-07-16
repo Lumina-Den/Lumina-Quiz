@@ -1,27 +1,3 @@
-/**
- * LUMINA CLAN — GitHub OAuth callback worker
- * ===========================================
- * Deploy this on Cloudflare Workers (free tier is plenty).
- * It is the ONLY piece of this project that needs a server,
- * because checking "is this GitHub user a member of our org"
- * requires a secret token that must never sit in frontend code.
- *
- * What it does:
- *   1. Receives the ?code= GitHub sends after the user approves
- *      the app on github.com/login/oauth/authorize.
- *   2. Exchanges that code for an access token (needs CLIENT_SECRET,
- *      kept as a Worker secret — never exposed to the browser).
- *   3. Looks up the user's GitHub profile.
- *   4. Checks whether that user is a member of your GitHub org,
- *      using a Worker-only Personal Access Token with `read:org`
- *      scope (also kept secret).
- *   5. Redirects back to your site with either
- *        ?login=success&user=...&avatar=...
- *      or
- *        ?login=denied&reason=not_member
- *
- * See server/README.md for step-by-step deploy instructions.
- */
 
 export default {
   async fetch(request, env) {
@@ -81,23 +57,7 @@ const isMember = Array.isArray(orgs) &&
   orgs.some(org => org.login.toLowerCase() === env.GITHUB_ORG.toLowerCase());
 
 if (!isMember) {
-  return new Response(
-    JSON.stringify(
-      {
-        githubUser: user.login,
-        orgSetting: env.GITHUB_ORG,
-        orgsReturnedByGitHub: orgs
-      },
-      null,
-      2
-    ),
-    {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-  );
+  return redirectToSite(env, { login: "denied", reason: "not_member" });
 }
 
       // 4. Success — send the user back with their public profile info.
