@@ -26,6 +26,8 @@
   --danger: #e6423d;
   --pixel-font: 'Press Start 2P', monospace;
   --body-font: 'VT323', monospace;
+  --github-color: #24292e;
+  --github-color-light: #3b4147;
 }
 
 *{ margin:0; padding:0; box-sizing:border-box; }
@@ -589,6 +591,182 @@ input[type="range"]{ accent-color: var(--emerald); }
   .question-text{ font-size:20px; }
   .answer-btn{ font-size:16px; }
   .results-grid{ grid-template-columns:1fr; }
+}
+
+/* =========================================================
+   LOGIN SCREEN
+   ========================================================= */
+#screen-login{
+  align-items:center; justify-content:center; text-align:center;
+  position:relative; overflow:hidden;
+}
+
+.login-particles{ position:absolute; inset:0; pointer-events:none; z-index:0; }
+.login-particles span{
+  position:absolute; width:5px; height:5px;
+  background: rgba(255,214,51,0.55);
+  animation: floatUp linear infinite;
+}
+
+/* Torches */
+.login-torches{ position:absolute; inset:0; pointer-events:none; z-index:1; }
+.torch{
+  position:absolute; bottom:0; width:26px; height:70px;
+  background: linear-gradient(180deg, transparent 0%, transparent 55%, var(--wood-dark) 55%, var(--wood-tan) 65%, var(--wood-dark) 100%);
+}
+.torch-left{ left:6%; }
+.torch-right{ right:6%; }
+@media (max-width:768px){ .torch{ display:none; } }
+.torch .flame{
+  position:absolute; top:-26px; left:50%; transform:translateX(-50%);
+  width:18px; height:26px;
+  background: radial-gradient(circle at 50% 70%, #fff2a8 0%, var(--gold) 40%, #ff6b1a 75%, transparent 100%);
+  border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+  filter: drop-shadow(0 0 10px var(--gold));
+  animation: flicker 0.5s ease-in-out infinite alternate;
+}
+@keyframes flicker{
+  0%{ transform:translateX(-50%) scale(1) rotate(-2deg); opacity:0.9; }
+  50%{ transform:translateX(-50%) scale(1.08) rotate(2deg); opacity:1; }
+  100%{ transform:translateX(-48%) scale(0.96) rotate(-1deg); opacity:0.85; }
+}
+
+.login-panel{
+  position:relative; z-index:2;
+  background: var(--panel-bg);
+  border:4px solid #000;
+  padding: 42px 46px 34px;
+  max-width: 480px;
+  width:100%;
+  box-shadow: 0 10px 0 rgba(0,0,0,0.5), inset 0 0 0 4px rgba(255,255,255,0.04);
+  animation: popIn 0.7s cubic-bezier(.2,1.4,.4,1) both;
+}
+
+.login-logo-wrap{
+  width:96px; height:96px; margin:0 auto 18px;
+  display:flex; align-items:center; justify-content:center;
+  animation: logoFloat 3.2s ease-in-out infinite;
+}
+@keyframes logoFloat{
+  0%,100%{ transform:translateY(0) rotate(0deg); }
+  50%{ transform:translateY(-8px) rotate(3deg); }
+}
+.login-logo-img{
+  width:100%; height:100%; object-fit:contain;
+  filter: drop-shadow(0 6px 0 rgba(0,0,0,0.4));
+  image-rendering: pixelated;
+}
+.login-logo-fallback{
+  display:none; width:96px; height:96px;
+  align-items:center; justify-content:center;
+  background: linear-gradient(180deg, #6bd66b, var(--grass-green) 55%, var(--grass-green-dark));
+  border:4px solid #000;
+  font-size:44px;
+  box-shadow: inset 3px 3px 0 rgba(255,255,255,0.25), inset -3px -3px 0 rgba(0,0,0,0.35);
+}
+
+.login-title{
+  font-family: var(--pixel-font); font-size:30px; letter-spacing:2px; line-height:1.5;
+}
+.login-subtitle{
+  font-family: var(--pixel-font); font-size:10px; color: var(--gold);
+  margin-top:8px; text-shadow: var(--text-shadow-mc);
+}
+.login-grass-divider{
+  height:12px; margin:22px 0 18px;
+  background: repeating-linear-gradient(90deg, var(--grass-green) 0 18px, var(--grass-green-dark) 18px 20px);
+  border:2px solid #000;
+}
+.login-tagline{ font-size:18px; color:#dcdcdc; margin-bottom:22px; }
+
+.login-actions{ display:flex; flex-direction:column; gap:14px; }
+
+.mc-btn-github{
+  background: linear-gradient(180deg, var(--github-color-light), var(--github-color) 60%, #14171a);
+  border-color:#0d0f11;
+  flex-wrap:wrap;
+  position:relative;
+}
+.mc-btn-github .gh-icon{ display:flex; align-items:center; }
+.gh-badge{
+  font-family: var(--body-font); font-size:12px; letter-spacing:0.5px;
+  background: rgba(255,255,255,0.12); color: var(--gold);
+  padding:3px 8px; border:1px solid rgba(255,255,255,0.25);
+  width:100%; margin-top:6px; text-align:center;
+}
+
+.login-note{
+  margin-top:22px; font-size:14px; line-height:1.5; color:#b8b8b8;
+}
+.login-note strong{ color: var(--gold); }
+
+.login-footer-tag{
+  position:absolute; bottom:16px; left:0; right:0;
+  font-size:14px; color:#999; z-index:2;
+}
+
+/* Block-burst click effect (shared by login buttons) */
+.login-burst-particle{
+  position:fixed; width:8px; height:8px; z-index:300;
+  animation: pixelBurst 0.65s ease-out forwards;
+  pointer-events:none;
+}
+
+/* =========================================================
+   TOASTS
+   ========================================================= */
+.toast-stack{
+  position:fixed; top:18px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; gap:10px;
+  z-index:500; width:min(420px, 90vw); pointer-events:none;
+}
+.mc-toast{
+  display:flex; align-items:flex-start; gap:10px;
+  background: linear-gradient(180deg,#2b2b2b,#151515);
+  border:3px solid var(--panel-border);
+  padding:12px 14px;
+  font-size:15px; line-height:1.4;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.5);
+  opacity:0; transform:translateY(-16px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.mc-toast.show{ opacity:1; transform:translateY(0); }
+.mc-toast-icon{ font-size:18px; flex-shrink:0; }
+.mc-toast-success{ border-color: var(--emerald); }
+.mc-toast-error{ border-color: var(--danger); }
+.mc-toast-info{ border-color: var(--diamond); }
+
+/* =========================================================
+   USER BADGE (home screen)
+   ========================================================= */
+.user-badge{
+  display:flex; align-items:center; gap:8px;
+  background: var(--stone-dark);
+  border:3px solid #222;
+  padding:6px 10px 6px 6px;
+  box-shadow: 0 3px 0 #222;
+}
+.user-avatar{
+  width:26px; height:26px; border-radius:2px;
+  border:2px solid #000; image-rendering:pixelated;
+}
+.user-name{
+  font-size:16px; color:#fff; max-width:140px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.small-icon-btn{ width:28px; height:28px; font-size:13px; }
+
+/* Home screen logo */
+.home-logo-wrap{ width:64px; height:64px; margin:0 auto 12px; }
+.home-logo-img{ width:100%; height:100%; object-fit:contain; image-rendering:pixelated; }
+
+/* Quit button inside quiz HUD */
+.quit-btn{ font-size:9px; padding:8px 10px; margin-bottom:4px; }
+
+@media (max-width:768px){
+  .login-panel{ padding:32px 24px 26px; }
+  .login-title{ font-size:22px; }
+  .user-name{ display:none; }
 }
 
 /* Reduced motion */

@@ -26,11 +26,20 @@ function loadData(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return defaultData();
     const parsed = JSON.parse(raw);
-    return Object.assign(defaultData(), parsed);
+    const merged = Object.assign(defaultData(), parsed);
+    // Deep-merge settings so new default keys (e.g. added in a later
+    // version) aren't lost when an older save is loaded.
+    merged.settings = Object.assign(defaultData().settings, parsed.settings || {});
+    // Guard against a corrupted/partial langStats object.
+    merged.langStats = (parsed && typeof parsed.langStats === "object" && parsed.langStats) || {};
+    return merged;
   }catch(e){ return defaultData(); }
 }
 
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(gameData)); }
+function saveData(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(gameData)); }
+  catch(e){ console.warn("Lumina Clan: could not save progress (storage unavailable or full).", e); }
+}
 
 let gameData = loadData();
 
@@ -309,6 +318,7 @@ function updateHud(){
 
 /* ---------- NEXT STEP ---------- */
 function nextStep(){
+  if(!quiz) return; // user quit the quiz before this scheduled step ran
   if(quiz.hearts <= 0) return; // endQuiz already scheduled
   quiz.index++;
   if(quiz.index >= quiz.questions.length){
@@ -377,6 +387,7 @@ function triggerScreenShake(){
    END QUIZ / RESULTS
    ========================================================= */
 function endQuiz(diedFromHearts){
+  if(!quiz) return; // user quit before this scheduled call ran
   clearInterval(quiz.timerHandle);
   const totalAnswered = quiz.correctCount + quiz.wrongCount + quiz.skippedCount;
   const accuracy = totalAnswered>0 ? Math.round((quiz.correctCount/quiz.questions.length)*100) : 0;
@@ -392,9 +403,9 @@ function endQuiz(diedFromHearts){
   if(isPerfect) gameData.hadPerfectGame = true;
 
   const ls = gameData.langStats[quiz.langKey] || { played:0, best:0, totalScore:0 };
-  ls.played++;
-  ls.best = Math.max(ls.best, accuracy);
-  ls.totalScore += quiz.score;
+  ls.played = (ls.played || 0) + 1;
+  ls.best = Math.max(ls.best || 0, accuracy);
+  ls.totalScore = (ls.totalScore || 0) + quiz.score;
   gameData.langStats[quiz.langKey] = ls;
 
   saveData();
@@ -432,18 +443,34 @@ function checkAchievements(){
   ACHIEVEMENTS.forEach(a=>{
     if(!gameData.unlockedAchievements.includes(a.id) && a.check(gameData)){
       gameData.unlockedAchievements.push(a.id);
-      showAchievementPopup(a);
+      queueAchievementPopup(a);
     }
   });
   saveData();
 }
 
-function showAchievementPopup(ach){
+/* Queue popups so multiple achievements unlocked at once are shown
+   one after another instead of overwriting each other's text. */
+const achievementQueue = [];
+let achievementPopupBusy = false;
+
+function queueAchievementPopup(ach){
+  achievementQueue.push(ach);
+  if(!achievementPopupBusy) processAchievementQueue();
+}
+
+function processAchievementQueue(){
+  if(achievementQueue.length === 0){ achievementPopupBusy = false; return; }
+  achievementPopupBusy = true;
+  const ach = achievementQueue.shift();
   const popup = document.getElementById("achievementPopup");
   document.getElementById("achPopupIcon").textContent = ach.icon;
   document.getElementById("achPopupName").textContent = ach.name;
   popup.classList.add("show");
-  setTimeout(()=>popup.classList.remove("show"), 3200);
+  setTimeout(()=>{
+    popup.classList.remove("show");
+    setTimeout(processAchievementQueue, 300);
+  }, 3200);
 }
 
 function renderAchievements(){
@@ -528,6 +555,21 @@ function init(){
   });
   document.getElementById("modalOverlay").addEventListener("click", closeModals);
 
+  // Escape key closes any open modal (keyboard users / quick dismiss)
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape") closeModals();
+  });
+
+  document.getElementById("btnQuitQuiz").addEventListener("click", ()=>{
+    if(!quiz) { showScreen("languages"); return; }
+    if(confirm("Quit this quiz? Your progress on this attempt will be lost.")){
+      SoundFX.click();
+      clearInterval(quiz.timerHandle);
+      quiz = null;
+      showScreen("languages");
+    }
+  });
+
   document.getElementById("musicToggle").addEventListener("click", ()=>{
     gameData.settings.musicOn = !gameData.settings.musicOn;
     updateToggleIcons(); saveData();
@@ -536,10 +578,7 @@ function init(){
     gameData.settings.sfxOn = !gameData.settings.sfxOn;
     updateToggleIcons(); saveData(); if(gameData.settings.sfxOn) SoundFX.click();
   });
-  document.getElementById("fullscreenBtn").addEventListener("click", ()=>{
-    if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
-    else document.exitFullscreen?.();
-  });
+  document.getElementById("fullscreenBtn").addEventListener("click", toggleFullscreen);
 
   document.getElementById("musicVolume").addEventListener("input", e=>{ gameData.settings.music = +e.target.value; saveData(); });
   document.getElementById("sfxVolume").addEventListener("input", e=>{ gameData.settings.sfx = +e.target.value; saveData(); });
@@ -561,6 +600,20 @@ function init(){
   document.getElementById("btnShareScore").addEventListener("click", shareScore);
 
   applyTheme();
+}
+
+function toggleFullscreen(){
+  const el = document.documentElement;
+  const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+  try{
+    if(!isFullscreen){
+      const request = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      request?.call(el)?.catch?.(()=>{});
+    }else{
+      const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+      exit?.call(document)?.catch?.(()=>{});
+    }
+  }catch(e){ /* fullscreen not supported / blocked — fail silently */ }
 }
 
 function shareScore(){
