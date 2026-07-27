@@ -1,7 +1,4 @@
-/* =========================================================
-   LUMINA CLAN — GAME ENGINE
-   Vanilla JS. No dependencies.
-   ========================================================= */
+
 
 /* ---------- STORAGE KEYS ---------- */
 const STORAGE_KEY = "luminaClanQuizData";
