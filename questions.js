@@ -1,9 +1,4 @@
-/* =========================================================
-   LUMINA CLAN — QUESTION DATABASE
-   20 Languages / Tools × 12 Questions each = 240 Questions
-   Format: { q: question text, code: optional snippet,
-             options: [4 strings], correct: index of correct option }
-   ========================================================= */
+
 
 const QUESTIONS_DB = {
 
